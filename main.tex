@@ -69,19 +69,21 @@ Because there are few works describing the concept of dynamic alignments, first 
 \subsection{Problem definition}
 \begin{defn}[Dynamic PPI network]
 \label{defndppi}
-Let $G=(V,E,L,R,T)$ be a \textit{dynamic PPI network}. $T$ denotes the entire time window about this dynamic PPI network, which means, the network $G$ exists from time 1 to time $T$. $V$ denotes the node set of proteins, $E$ denotes the edge set of protein-protein interactions. $L$ and $R$ are functions telling active time intervals of every edge. For example, for one edge $(u,v)\in E$, the time interval $[L(u,v),R(u,v)]$ means that the corresponding protein-protein interaction only exists from time $L(u,v)$ to time $R(u,v)$.
+Let $G=(V,E)$ be a \textit{dynamic PPI network}. $V$ denotes the node set of proteins and $E$ denotes the edge set of \textit{dynamic} protein-protein interactions. For every edge $e\in E, e$ has the form $(u_e,v_e,l_e,r_e)$ which means that the interaction between proteins $u_e$ and $v_e$ exists from time $l_e$ to $r_e$. Here, the time is discrete and start from 1. Let $T_G=max\{r_e: e\in E\}$ denotes the maximum value of the time across all the dynamic protein-protein interactions.
 \end{defn}
+
+From the definition \ref{defndppi}, we can see that the difference between a dynamic PPI network and a static PPI network is whether a PPI has an time interval in which it's active. So for the static network, the edge $e$ has the form $(u_e,v_e)$.
 
 \begin{defn}[Instance network]
 \label{defninstance}
-In general, a dynamic PPI network $G(V,E,L,R,T)$ can be treated as combination of $T$ static PPI networks. At time $i$, we call the static PPI network $G_i=(V,E_i)$ an \textit{instance network} of $G$. $E_i=\{(u,v):(u,v)\in E,L(u,v)\leq i\leq R(u,v)\}$ denotes the edge set of $G_i$.
+In general, a dynamic PPI network $G(V,E)$ can be treated as combination of $T_G$ static PPI networks. At time $i$, we call the static PPI network $G_i=(V,E_i)$ an \textit{instance network} of $G$. $E_i=\{(u_e,v_e):e\in E,l_e\leq i\leq r_e\}$ denotes the edge set of $G_i$.
 \end{defn}
 
 According to the definition \ref{defndppi} and \ref{defninstance}, a dynamic PPI network is made up of many static PPI networks, and at different times, the dynamic network can be seen as different static networks. That is what \textit{dynamic} means.
 
 \begin{defn}[Dynamic alignment]
 \label{defndppigna}
-Let $SG=(SV,SE)$ be a static PPI network and $DG=(DV,DE,L,R,T)$ be a dynamic PPI network (without loss of generality, $|SV|\leq |DV|$). A \textit{dynamic alignment} of these two PPI networks is a one-one node mapping $f:SV\rightarrow DV,\forall v_1,v_2\in SV,f(v_1)\neq f(v_2)$. 
+Let $SG=(SV,SE)$ be a static PPI network and $DG=(DV,DE)$ be a dynamic PPI network (without loss of generality, $|SV|\leq |DV|$). A \textit{dynamic alignment} of these two PPI networks is a one-one node mapping $f:SV\rightarrow DV,\forall v_1,v_2\in SV,f(v_1)\neq f(v_2)$. 
 \end{defn}
 
 We can see that the alignment of dynamic PPI networks is similar to the static version except the target network is a dynamic PPI network. For one node $v_1\in SV$, if $v_1$ is mapped to some node $v_2\in DV$ ($f(v_1)=v_2$), we say that $(v_1,v_2)$ is an \textit{alignment pair} and $v_2$ is the \textit{aligned node} of $v_1$ beyond alignment $f$, vice versa. Otherwise, we say $v_1$ is not aligned. Also, there will be no two nodes aligned to the same node.
@@ -95,32 +97,23 @@ Let $f$ be an alignment of a static network $SG$ and a dynamic network $DG$. For
 
 According to the definition \ref{defnceme}, $f_i(SE)=\{(u,v):(u,v)\in SE,(f(u),f(v))\in DE_i\}$ is a set which consists of all conserved edges at time $i$. 
 
-Like the static version, we define new alignment quality measurements for the dynamic alignment.
+As we know, for static alignments, there are many alignment quality measurements defined to tell whether an alignment is good or bad. So, like the static measurements, we define new alignment quality measurements for the dynamic alignments based on the static alignment quality measurement.
 \begin{defn}[Dynamic alignment quality measurements]
 \label{defndmeasure}
-Let $f$ be an alignment of a static network $SG$ and a dynamic network $DG$. Define $$DEC(f)=\underset{i}{max}\frac{\left | f_i(SE) \right |}{\left | SE \right |}$$ be the \textit{DEC} measurement of dynamic alignment $f$. Similarly, 
-$$DICS(f)=\underset{i}{max}\frac{\left | f_i(SE) \right |}{\left |DE_i(DG[f(SV)])\right |}$$ is the \textit{DICS} measurement,
-$$DS^{3}(f)=\underset{i}{max}\frac{\left | f_i(SE) \right |}{\left | SE \right |+\left |DE_i(DG[f(SV)]) \right |-\left | f_i(SE) \right |}$$ is the \textit{DS}$^{3}$ measurement,
-$$DTWEC(f)=\underset{i}{max}(\frac{\left | f_i(SE) \right |}{\left | SE \right |}+\frac{\left | f_i(SE) \right |}{\left |DE_i(DG[f(SV)])\right |})/2$$ is the \textit{DTWEC} measurement. Where $f(SV)=\{f(u)\in DV:u\in SV\}$ is a set which consists of all aligned nodes in $DG$ and $DG[X]$ is the induced subgraph of $DG$ by node set $X$.
+Let $f$ be an alignment of a static network $SG$ and a dynamic network $DG$. Define $$DEC(f)=\underset{i}{max}\frac{\left | f_i(SE) \right |}{\left | SE \right |}$$ be the \textit{DEC} measurement of dynamic alignment $f$, it calculates the maximum ratio of number of the conserved edges to the number of edges in $SG$ across all the times.
+Similarly, 
+$$DICS(f)=\underset{i}{max}\frac{\left | f_i(SE) \right |}{\left |DE_i(DG[f(SV)])\right |}$$ is the \textit{DICS} measurement which calculates the maximum ratio of the number of conserved edges to the number of edges in the subgraph of $DG_i$ which is induced by the aligned node set under alignment $f$ across all the times,
+$$DS^{3}(f)=\underset{i}{max}\frac{\left | f_i(SE) \right |}{\left | SE \right |+\left |DE_i(DG[f(SV)]) \right |-\left | f_i(SE) \right |}$$ is the \textit{DS}$^{3}$ measurement which calculates the maximum ratio of number of the conserved edges to the number of edges which is an union set of $SE$ and mapping edges in $DE_i$ across all the times,
+$$DTWEC(f)=\underset{i}{max}(\frac{\left | f_i(SE) \right |}{\left | SE \right |}+\frac{\left | f_i(SE) \right |}{\left |DE_i(DG[f(SV)])\right |})/2$$ is the \textit{DTWEC} measurement which is an average estimate about $DEC$ and $DICS$ measurements. 
+
+Here, $f(SV)=\{f(u)\in DV:u\in SV\}$ is a set which consists of all aligned nodes in $DG$ and $DG[X]$ is the induced subgraph of $DG$ by node set $X$.
 \end{defn}
 
-The definition \ref{defndmeasure} gives us some quality measurements for any dynamic alignment. In fact, the the dynamic measurement equals the largest one of the corresponding $T$ static-version measurements.
+The definition \ref{defndmeasure} gives us some quality measurements for any dynamic alignments. We can see that all the dynamic-version measurements are actually the extension of the corresponding static-version measurements which calculates the maximum value of static-version measurements across all the times.
 
 \textbf{Dynamic PPI network alignment problem}. We define the problem as that of finding a dynamic alignment which can maximize the corresponding dynamic alignment quality measurement. Formally, we want to find a dynamic alignment $f$ such that $Q(f)$ is as large as possible, where $Q(f)$ is some dynamic alignment quality measurement for $f$.
 
-%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-\subsection{Application of state-of-the-art static methods}
-For now, there already have many alignment methods that aim to find global alignments of PPI networks, but they are all used for static PPI networks and can not be used in our dynamic case directly. Nevertheless, we propose two naive ways to apply state-of-the-art static alignment methods to produce dynamic alignments.
-
-\textbf{Case 1}. Let $SG$ be the static network and $DG$ be the dynamic network. For the first case, we just ignore the $L,R,T$ partitions of $DG$ and treat it as a static PPI network $DG(DV,DE)$. Then we can apply any state-of-the-art static methods to align $SG$ and $DG$. Finally, we use the alignment generated by the static method as our dynamic alignment.
-
-\textbf{Case 2}. For the second case, consider the $T$ instance networks $DG_i$ of $DG$. What we shall do, is to use static methods to align every pair of networks $SG$ and $DG_i$. At last we will get $T$ static alignments, we pick the alignment with the highest quality measurement as our dynamic alignment.
-
-The two ways of applying state-of-the-art methods in our problem are very simple and have their own advantages and disadvantages. For the first case, we just need to align networks once but maybe produce a bad alignment. For the second case, we need to align networks $T$ times to get a good alignment which is too time consuming.
-
-%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-\subsection{The SGOPT alignment method}
-The alignment quality measurements give us a hint that a good alignment is alway an alignment that has a large number of conserved edges. That's also the motivation of our method.
+\textbf{The CE measurement}. The alignment quality measurements give us a hint that a good alignment is alway an alignment that has a large number of conserved edges. That's also the motivation of our method. Actually in this work, what we expected to do, is to maximize the CE measurement of a dynamic alignment. Here, we give its formal definition.
 
 \begin{defn}[CE measurement]
 \label{defnce}
@@ -128,74 +121,48 @@ Let $f$ be an alignment of a static network $SG$ and a dynamic network $DG$, def
 $$CE(f)=\underset{i}{max}\{ |f_i(SE)|\}$$
 \end{defn}
 
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+\subsection{Application of state-of-the-art static methods}
+For now, there already have many alignment methods that aim to find global alignments of PPI networks, but they are all used for static PPI networks and can not be used in our dynamic case directly. Nevertheless, we propose two naive ways to apply state-of-the-art static alignment methods to produce dynamic alignments.
+
+\textbf{Case 1}. Let $SG$ be the static network and $DG$ be the dynamic network. For the first case, we just ignore the $l_e,r_e$ for every edge $e\in DE$ and treat it as a static PPI network $DG(DV,DE)$. Then we apply any state-of-the-art static methods to align $SG$ and $DG$. Finally, we use the alignment generated by the static method as our dynamic alignment.
+
+\textbf{Case 2}. For the second case, consider all the instance networks $DG_i$ of $DG$. What we should do, is to use static methods to align every pair of networks $SG$ and $DG_i$. At last we will get several static alignments and we pick the one with the highest alignment quality measurement as our dynamic alignment.
+
+The two ways of applying state-of-the-art methods in our problem are very simple and have their own advantages and disadvantages. For the first case, we just need to align networks once but maybe produce a bad alignment. For the second case, we need to align networks $T_{DG}$ times to get a good alignment which is too time consuming if $T_{DG}$ is very large.
+
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+\subsection{The SGOPT alignment method}
 According to the definition \ref{defnce}, what we seek is the maximum number of conserved edges between $SG$ and all instance networks $DG_i$ for the alignment $f$. Thus, what SGOPT does, is to find a dynamic alignment $f$ that maximize $CE(f)$.
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+\subsubsection{General framework}
+The SGOPT method is actually a general framework which can be used to improve any alignments produced by static alignment methods, so the input of the SGOPT method can be any alignments. 
 
-\begin{thm}
-Let $f$ be the alignment of one static network $SG$ and one dynamic network $DG$. The time complexity to calculate $CE(f)$ is $O(|SE|*T)$
-\end{thm}
-\begin{proof}
-For the purpose of calculating $CE(f)$, basically we should calculate all $f_i(SE)$ at every time $i$ and pick the one with largest set size. For the purpose of calculating $f_i(SE)$, we should check every edge in $SE$ to see if it's a conserved edge at time $i$ which can be done in $O(1)$. Thus, it takes $O(|SE|)$ to calculate $f_i(SE)$ for a fixed time and $O(|SE|*T)$ to calculate all sets over time. 
-\end{proof}
-\begin{cor}
-\label{corsingleforce}
-Let $f$ be the alignment of one static network $SG$ and one dynamic network $DG$. If $f$ is changed and makes only one edge $(u,v)\in SE$ change its mapping (the aligned node of either of its two nodes), the time complexity to re-calculate $CE(f)$ is $O(T)$. 
-\end{cor}
-\begin{proof}
-Because only the mapping of the edge $(u,v)\in SE$ is changed, just re-check $(u,v)$ to see if it's conserved at every time $i$ and renew the corresponding set $f_i(SE)$.
-\end{proof}
-The first contribution of SGOPT, is to reduce the time complexity of the corollary \ref{corsingleforce} to $O(log(T))$ by using the \textit{segment tree} data structure.
+The SGOPT method is consist of two main parts, the local optimization strategy part and the segment tree optimization part. The main idea of SGOPT is to use a local optimization strategy to improve any alignments iteratively in terms of the CE measurement. And for increasing the speed of calculating the CE measurements, a data structure called segment tree is used to guarantee the efficiency.
 
-The second contribution of SGOPT is a local optimization strategy. Based on the fast calculation of $CE(f)$, the local optimization strategy can be used to adjust $f$ iteratively and finally produce a good dynamic alignment.
-
-%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-\subsubsection{Reduce the time complexity from $O(T)$ to $O(log(T))$}
-The corollary \ref{corsingleforce} shows that if one edge in $SE$ changes its' mapping, we should check its' state at every time. But actually we need not to do that.
-\begin{thm}
-\label{thmsingletree}
-For the problem in corollary \ref{corsingleforce}, it takes $O(log(T))$ to renew $CE(f)$ if a segment tree is used.
-\end{thm}
-\begin{proof}
-Let $x_1$ be the aligned node of $u$ and $y_1$ be the aligned node of $v$ before $f$ is changed. Let $x_2$ be the aligned node of $u$ and $y_2$ be the aligned node of $v$ after $f$ is changed.
-
-For the first case, $(x_1,y_1)$ is not an edge of $DE$ which means that $(u,v)$ is not a conserved edge at any time. Thus, the set size of $f_i(SE)$ will not change for every $i$ if we remove the mapping of $(u,v)$.
-
-For the second case, $(x_1,y_1)$ is an edge of $DE$ which means that $(u,v)$ is a conserved edge from time $L(x_1,y_1)$ to $R(x_1,y_1)$. Thus, the set size of $f_i(SE)$ will decrease by one in this time interval if we remove the mapping of $(u,v)$.
-
-The two cases can also be applied to $(x_2,y_2)$ if we add the new mapping of $(u,v)$. And we can conclude that every time a mapping of one edge changes, some values of $|f_i(SE)|$ in a time interval will increase by one and some values of $|f_i(SE)|$ will decrease by one. If we treat all values of $|f_i(SE)|$ as an integer sequence, then every time we will increase or decrease all the values by one in some interval.As for the calculation of $CE(f)$, we just need to know the largest value of the integer sequence.
-
-As all the changes of an integer sequence can be maintained by the segment tree data structure in $O(log(T))$, the time complexity of re-calculation of $CE(f)$ can be reduced to $O(log(T))$.
-\end{proof}
-
-\begin{cor}
-\label{corntree}
-Let $f$ be the alignment of one static network $SG$ and one dynamic network $DG$. If $f$ is changed and makes $N$ edges $(u,v)\in SE$ change their mappings, the time complexity of re-calculate $CE(f)$ is $O(N*log(T))$. 
-\end{cor}
 %@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 \subsubsection{The local optimization strategy}
-Based on the segment tree optimization which reduces the time complexity of calculating $CE(f)$ to $O(log(T))$, SGOPT uses a local optimization strategy to adjust any initial alignments iteratively and make $CE(f)$ as large as possible.
-\begin{defn}[Adjustment of alignments]
+SGOPT uses a local optimization strategy to adjust any initial alignment $f$ iteratively and make $CE(f)$ as large as possible.
+
+\begin{defn}[Adjustment of the alignment]
 \label{defnadj}
 Let $f$ be an alignment of one static network $SG$ and one dynamic network $DG$. Let $(x,y)$ be a pair that $x\in SV,y\in DV$. There are two cases at which we call the pair $(x,y)$ an \textit{adjustment} of the alignment $f$. For the first case, neither $x$ nor $y$ is aligned and we make $(x,y)$ a new alignment pair for $f$. For the second case, $(x,y)$ is already an alignment pair of $f$, and we remove this alignment pair from $f$, making $x$ and $y$ unaligned.
 \end{defn}
-According to the definition \ref{defnadj}, if we make an adjustment $(u,v)$ of the alignment $f$. There will be $|N(u)|$ edges whose mapping will be changed ($N(u)$ is the neighbour node set of node $u$). Thus it takes $O(|N(u)|*log(T))$ to re-calculate the $CE(f)$ (corollary \ref{corntree}).
 
 \begin{defn}[Pair contribution]
 \label{defncontribute}
-Let $f$ be an alignment of one static network $SG$ and one dynamic network $DG$. For one pair $(x,y),x\in SV,y\in DV$ that $x$ and $y$ are not aligned, define the \textit{pair contribution} of $(x,y)$ for $f$ as $C_f(x,y)=|\{(u,v):u\in N(x),v\in N(y),f(u)=v\}|$.
+Let $f$ be an alignment of one static network $SG$ and one dynamic network $DG$. For one pair $(x,y),x\in SV,y\in DV$ that $x$ and $y$ are not aligned, define the \textit{pair contribution} of $(x,y)$ for $f$ as $$C_f(x,y)=|\{(u,v):u\in N(x),v\in N(y),f(u)=v\}|$$. Here, $N(x)$ denotes the set of nodes which are neighbors of node $x$.
 \end{defn}
-\textbf{The local optimization strategy}. The main idea of the strategy is to make lots of adjustments of the alignment iteratively based on a local optimization model. In each iteration, we first pick some alignment pairs of $f$ randomly and remove these pairs from $f$. Then we construct a weighted bipartite graph $bg$ whose two partition consist of unaligned nodes in $SV$ and unaligned nodes in $DV$. Every edge in $bg$ is weighted by its pair contribution. A maximum weighted bipartite graph matching is produced by some bipartite graph matching algorithm. For every match of the graph matching, it stands for a new alignment pair which we will add to the alignment $f$.
 
-There are two parameters $\alpha,\beta$ associated with the strategy. $\alpha$ controls the maximum iteration count and $\beta$ controls the number of alignment pairs to be removed in every iteration.
+We can see that the pair contribution is an estimate of added conserved edges if this pair is aligned.
 
-See the SGOPT algorithm for more details.
+\textbf{General process and the algorithm}. The main idea of the strategy is to make lots of adjustments of the alignment $f$ iteratively based on a local optimization model. In each iteration, we pick some alignment pairs of $f$ randomly and remove these pairs from $f$. Then we construct a weighted bipartite graph $bg$ whose two partitions are consist of unaligned nodes in $SV$ and $DV$ respectively. Every edge in $bg$ is weighted by its pair contribution. A maximum weighted bipartite graph matching is produced by some bipartite graph matching algorithm. For every match of the graph matching, it stands for a new alignment pair which we will add to the alignment $f$.
 
+See Algorithm~\ref{alg:1} for more details. As we can see from the algorithm, it is an iterative algorithm and for an iterative algorithm we should setup a number of total iterations the algorithm will run for, that is what $\alpha$ means. For $\beta$, it stands for the number of alignment pairs we will remove in each iteration. 
 
+For $\alpha$, if it is too large, the algorithm will be time consuming. On the other side, if it is too small, the algorithm may not produced good alignments. We should see how $\alpha$ effects the algorithm.
 
-\textbf{Time complexity}. The main running time of the algorithm is consumed on the iterations. In each iteration, it takes $O(\beta)$ to pick the alignment pairs which need to be removed from $f$. And for every alignment pair $(u,v)$, it takes $O(|N(u)|*log(T))$ to remove it. Because we choose the alignment pairs randomly, so the value of $|N(u)|$ can be approximately estimated by $Avg(SG)$ which is the average node degree of $SG$. So it takes $O(\beta*Avg(SG)*log(T))$ to complete the adjustment of the alignment $f$ in every iteration.
-
-For the construction of the bipartite graph, there will be at most $O(\beta)$ nodes in one partition of the bipartite graph. So it takes $O(\beta^2*Avg(DG)*Avg(SG))$ to construct the bipartite graph. In our experimental implementation we use a greedy strategy to construct the maximum weighted matching which only takes $O(\beta^2)$.
-
-So the overall time complexity is $O(\alpha*(\beta^2*Avg(DG)*Avg(SG)+\beta*Avg(SG)*log(T)))$.
+For $\beta$, if it is too large, there will be a large bipartite graph constructed in each iteration and it will take more time in each iteration. Also, $\beta$ is an important factor that may influence the chance of finding a better alignment in each iteration.Thus, we should see how $\beta$ effects the algorithm.
 \begin{algorithm}[!tpb]
     {
     \caption{The SGOPT algorithm}
@@ -204,11 +171,13 @@ So the overall time complexity is $O(\alpha*(\beta^2*Avg(DG)*Avg(SG)+\beta*Avg(S
         \Require
         $SG(SV,SE)$: the static network
         
-        $DG(DV,DE,L,R,T)$: the dynamic network 
+        $DG(DV,DE)$: the dynamic network 
         
         $f$: the initial alignment need to adjust
         
-        $\alpha,\beta$: the parameters of the SGOPT algorithm
+        $\alpha$: the parameter of the SGOPT algorithm, denotes the number of total iterations the algorithm will run
+        
+        $\beta$: the parameter of the SGOPT algorithm, denotes the number of alignment pairs the algorithm will remove in each iteration
         
         \Ensure
         $f$: the final alignment after adjustment
@@ -232,6 +201,67 @@ So the overall time complexity is $O(\alpha*(\beta^2*Avg(DG)*Avg(SG)+\beta*Avg(S
     }
     \end{algorithm}
 \end{methods}
+
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+\subsubsection{The segment tree optimization}
+According to the algorithm~\ref{alg:1}, in each iteration, we shall maintain $CE(f)$ while a new candidate alignment $f$ is being constructed. In this work, we introduce an optimization framework to maintain $CE(f)$ very efficiently. The main idea of the optimization framework is a data structure called segment tree.
+
+\textbf{Segment tree}. Segment tree is a data structure which is very suitable to solve sequence problems. In general, a segment tree is a binary tree whose nodes stands for a interval of the sequence. The root of the binary tree stands for the whole sequence. For a node in the binary tree, if the length of interval is not 1, then it will have two child nodes whose length is half of the length of the interval of the parent node. As a result, for a sequence with length $T$, a segment tree with a height no more than $log(T)$ can be constructed. It can be proved that any interval operations can be done in $O(log(T))$ in the segment tree.
+
+Because what we care about is the speed of calculating $CE(f)$, so we should see what the time complexity is whether we use a segment tree or not.
+
+\textbf{Maintain $CE(f)$ without a segment tree}. If we directly maintain $CE(f)$ without a segment tree, the time complexity of maintaining $CE(F)$ is $O(T_{DG})$, see Theorem~\ref{thmsingleforce} and Corollary~\ref{corsingleforce} for details.
+\begin{thm}
+\label{thmsingleforce}
+Let $f$ be the alignment of one static network $SG$ and one dynamic network $DG$. The time complexity to calculate $CE(f)$ is $O(|SE|*T_{DG})$
+\end{thm}
+\begin{proof}
+For the purpose of calculating $CE(f)$, basically we should calculate all $f_i(SE)$ at every time $i$ and pick the one with largest set size. For the purpose of calculating $f_i(SE)$, we should check every edge in $SE$ to see if it's a conserved edge at time $i$ which can be done in $O(1)$. Thus, it takes $O(|SE|)$ to calculate $f_i(SE)$ for a fixed time and $O(|SE|*T_{DG})$ to calculate all sets over time. 
+\end{proof}
+\begin{cor}
+\label{corsingleforce}
+Let $f$ be the alignment of one static network $SG$ and one dynamic network $DG$. If $f$ is changed and makes only one edge $(u,v)\in SE$ change its mapping (the aligned node of either of its two nodes), the time complexity to re-calculate $CE(f)$ is $O(T_{DG})$. 
+\end{cor}
+\begin{proof}
+Because only the mapping of the edge $(u,v)\in SE$ is changed, just re-check $(u,v)$ to see if it's conserved at every time $i$ and renew the corresponding set $f_i(SE)$.
+\end{proof}
+
+
+\textbf{Reduce the time complexity from $O(T_{DG})$ to $O(log(T_{DG}))$}. The corollary \ref{corsingleforce} shows that if one edge in $SE$ changes its' mapping, we should check its' state at every time. But actually the time complexity can be reduce to $O(log(T_{DG}))$ is a segment tree is used, see Theorem~\ref{thmsingletree} for details.
+
+\begin{thm}
+\label{thmsingletree}
+For the problem in corollary \ref{corsingleforce}, it takes $O(log(T_{DG}))$ to renew $CE(f)$ if a segment tree is used.
+\end{thm}
+\begin{proof}
+Let $x_1$ be the aligned node of $u$ and $y_1$ be the aligned node of $v$ before $f$ is changed. Let $x_2$ be the aligned node of $u$ and $y_2$ be the aligned node of $v$ after $f$ is changed.
+
+For the first case, $(x_1,y_1)$ is not an mapping edge of $DE$ at any time which means that $(u,v)$ is not a conserved edge at any time. Thus, the set size of $f_i(SE)$ will not change for every $i$ if we remove the mapping of $(u,v)$.
+
+For the second case, $(x_1,y_1)=(u_e,v_e)$ for some edge $e\in DE$ which means that $(u,v)$ is a conserved edge from time $l_e$ to $r_e$. Thus, the set size of $f_i(SE)$ will decrease by one in this time interval if we remove the mapping of $(u,v)$.
+
+The two cases can also be applied to $(x_2,y_2)$ if we add the new mapping of $(u,v)$. And we can conclude that every time a mapping of one edge changes, some values of $|f_i(SE)|$ in a time interval will increase by one and some values of $|f_i(SE)|$ will decrease by one. If we treat all values of $|f_i(SE)|$ as an integer sequence, then every time we will increase or decrease all the values by one in some interval.As for the calculation of $CE(f)$, we just need to know the largest value of the integer sequence.
+
+As all the changes of an integer sequence can be maintained by the segment tree data structure in $O(log(T_{DG}))$, the time complexity of re-calculation of $CE(f)$ can be reduced to $O(log(T_{DG}))$.
+\end{proof}
+
+\begin{cor}
+\label{corntree}
+Let $f$ be the alignment of one static network $SG$ and one dynamic network $DG$. If $f$ is changed and makes $N$ edges $(u,v)\in SE$ change their mappings, the time complexity of re-calculate $CE(f)$ is $O(N*log(T_{DG}))$. 
+\end{cor}
+
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+\subsubsection{Time complexity analysis} 
+
+According to the definition \ref{defnadj}, if we make an adjustment $(u,v)$ of the alignment $f$. There will be $|N(u)|$ edges whose mapping will be changed. Thus it takes $O(|N(u)|*log(T_{DG}))$ to re-calculate the $CE(f)$ (corollary \ref{corntree}).
+
+The main running time of the algorithm is consumed on the iterations. In each iteration, it takes $O(\beta)$ to pick the alignment pairs which need to be removed from $f$. And for every alignment pair $(u,v)$, it takes $O(|N(u)|*log(T_{DG}))$ to remove it. Because we choose the alignment pairs randomly, so the value of $|N(u)|$ can be approximately estimated by $Avg(SG)$ which is the average node degree of $SG$. So it takes $O(\beta*Avg(SG)*log(T_{DG}))$ to complete the adjustment of the alignment $f$ in every iteration.
+
+For the construction of the bipartite graph, there will be at most $O(\beta)$ nodes in one partition of the bipartite graph. So it takes $O(\beta^2*Avg(DG)*Avg(SG))$ to construct the bipartite graph. In our experimental implementation we use a greedy strategy to construct the maximum weighted matching which only takes $O(\beta^2)$.
+
+So the overall time complexity is $O(\alpha*(\beta^2*Avg(DG)*Avg(SG)+\beta*Avg(SG)*log(T_{DG})))$.
+
+
 %@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 \section{Results and discussion}
 %@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -266,11 +296,11 @@ In this paper, we compare SGOPT with four methods.The first method is IsoRank\ci
 The L-GRAAL\citep{malod2015graal} method is the most recent work of the GRAAL family. It models the alignment problem as an \textit{integer programming} problem and produce the final alignment by solving the problem with Lagrangian relaxation.
 
 \begin{table}[!h]
-\processtable{Details of four dynamic PPI networks.$T$ is the number of time of the dynamic network. Average interactions measure the average number of edges among all the $T$ instance networks\label{table:2}}
+\processtable{Details of four dynamic PPI networks. Average interactions measure the average number of edges among all the $T_{DG}$ instance networks\label{table:2}}
 {
 \begin{tabular}{@{}llll@{}}
 \toprule 
-Species & T & Proteins & Average interactions\\
+Species & $T_{DG}$ & Proteins & Average interactions\\
 \midrule
 C.elegans & 15 & 2974 & 1896.87\\
 D.melanogaster & 15 & 7387 & 9995.27\\
@@ -350,7 +380,7 @@ For the CE measurement, in general, \textit{SGOPT-Method} always has better alig
 
 For the running time, we find that \textit{Method-W2} is very time consuming even though it can produce good alignments. That's where the advantage of SGOPT is. Compared to \textit{Method-W1}, SGOPT can produce better results within an acceptable running time. Compared to \textit{Method-W2}, SGOPT can save a large running time, although having a worse alignment.  
 
-There is an exception for the PROPER method. From all the results, we observe that even in \textit{PROPER-W2}, the algnment result is better than SGOPT from the aspect of either CE measurement or running time. But SGOPT has a potential advantage if the number of time of the dynamic PPI network increases. PROPER is better at saving time than SGOPT for $T=15$, but will fail with larger value of $T$ because the time complexity of \textit{PROPER-W2} is proportional to $O(T)$, but for SGOPT, this is $O(log(T))$.
+There is an exception for the PROPER method. From all the results, we observe that even in \textit{PROPER-W2}, the algnment result is better than SGOPT from the aspect of either CE measurement or running time. But SGOPT has a potential advantage if the number of time of the dynamic PPI network increases. PROPER is better at saving time than SGOPT for $T_{DG}=15$, but will fail with larger value of $T_{DG}$ because the time complexity of \textit{PROPER-W2} is proportional to $O(T_{DG})$, but for SGOPT, this is $O(log(T_{DG}))$.
 
 Therefore, for the trade-off between the CE measurement and running time, we conclude that SGOPT could be a method which can produce good alignments in short time.
 \begin{figure}[!htbp]
